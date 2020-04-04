@@ -38,6 +38,14 @@ fun main(args: Array<String>) {
                                     }
                                 }
                             }
+                            h3 { +"Vote now" }
+                            p {
+                                div { a(href = "/vote/1") { +"1" } }
+                                div { a(href = "/vote/2") { +"2" } }
+                                div { a(href = "/vote/3") { +"3" } }
+                                div { a(href = "/vote/4") { +"4" } }
+                                div { a(href = "/vote/5") { +"5" } }
+                            }
                         }
                     }
                 }
