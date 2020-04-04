@@ -1,9 +1,10 @@
 package html
 
+import getAllFeedbacks
+import getVoteCount
+import getVotesAverage
 import kotlinx.html.*
 import kotlinx.html.stream.appendHTML
-import voteCount
-import votesAverage
 
 fun generateVotesOverviewSite() = buildString {
     appendHTML().html {
@@ -15,25 +16,40 @@ fun generateVotesOverviewSite() = buildString {
             p {
                 table {
                     tr {
+                        td { +"Description" }
                         td { +"Nr of votes" }
-                        td { +voteCount.toString() }
-                    }
-                    tr {
                         td { +"Vote result" }
-                        td {
-                            +if (voteCount > 0) votesAverage.toString() else "no votes yet!"
+                        td { +"Vote now!" }
+                    }
+                    getAllFeedbacks().forEach { feedback ->
+                        tr {
+                            td { +feedback.description }
+                            td { +getVoteCount(feedbackId = feedback.id).toString() }
+                            td {
+                                +if (getVoteCount(feedbackId = feedback.id) > 0) getVotesAverage(feedbackId = feedback.id).toString() else "no votes yet!"
+                            }
+                            td {
+                                a(href = "/vote/${feedback.id}/1") { +"1" }
+                                +" "
+                                a(href = "/vote/${feedback.id}/2") { +"2" }
+                                +" "
+                                a(href = "/vote/${feedback.id}/3") { +"3" }
+                                +" "
+                                a(href = "/vote/${feedback.id}/4") { +"4" }
+                                +" "
+                                a(href = "/vote/${feedback.id}/5") { +"5" }
+                            }
                         }
                     }
                 }
             }
-            h3 { +"Vote now" }
-            p {
-                div { a(href = "/vote/1") { +"1" } }
-                div { a(href = "/vote/2") { +"2" } }
-                div { a(href = "/vote/3") { +"3" } }
-                div { a(href = "/vote/4") { +"4" } }
-                div { a(href = "/vote/5") { +"5" } }
+            h3 { +"Add feedback!" }
+            form(action = "/addFeedback", method = FormMethod.post) {
+                div { +"Feedback description" }
+                input(type = InputType.text, name = "feedbackDescription")
+                button(type = ButtonType.submit) { +"Send" }
             }
+
         }
     }
 }
