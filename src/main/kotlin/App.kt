@@ -8,6 +8,10 @@ import io.ktor.server.netty.Netty
 import kotlinx.html.*
 import kotlinx.html.stream.appendHTML
 
+class Vote(val value: Int)
+
+val votes = mutableListOf<Vote>()
+
 fun main(args: Array<String>) {
     embeddedServer(Netty, 8080) {
         routing {
@@ -19,6 +23,21 @@ fun main(args: Array<String>) {
                         }
                         body {
                             h1 { +"FeedbackPro" }
+                            p {
+                                table {
+                                    tr {
+                                        td { +"Nr of votes" }
+                                        td { +votes.count().toString() }
+                                    }
+                                    tr {
+                                        td { +"Vote result" }
+                                        td {
+                                            +if (votes.count() > 0) votes.map { it.value }.average()
+                                                .toString() else "no votes yet!"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
