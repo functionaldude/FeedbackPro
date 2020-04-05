@@ -10,46 +10,63 @@ fun generateVotesOverviewSite() = buildString {
     appendHTML().html {
         head {
             title(content = "FeedbackPro")
+            unsafe {
+                +"""
+                    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css">
+                    <script
+                      src="https://code.jquery.com/jquery-3.1.1.min.js"
+                      integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+                      crossorigin="anonymous"></script>
+                    <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.js"></script>
+                """.trimIndent()
+            }
         }
         body {
-            h1 { +"FeedbackPro" }
-            p {
-                table {
+            h1(classes = "ui header") { +"FeedbackPro" }
+            table(classes = "ui celled table") {
+                thead {
                     tr {
-                        td { +"Description" }
-                        td { +"Nr of votes" }
-                        td { +"Vote result" }
-                        td { +"Vote now!" }
+                        th { +"Description" }
+                        th { +"Nr of votes" }
+                        th { +"Vote result" }
+                        th { +"Vote now!" }
                     }
+                }
+                tbody {
                     getAllFeedbacks().forEach { feedback ->
                         tr {
                             td { +feedback.description }
                             td { +getVoteCount(feedbackId = feedback.id).toString() }
                             td {
-                                +if (getVoteCount(feedbackId = feedback.id) > 0) getVotesAverage(feedbackId = feedback.id).toString() else "no votes yet!"
+                                +if (getVoteCount(feedbackId = feedback.id) > 0) {
+                                    getVotesAverage(feedbackId = feedback.id).format(decimalDigits = 2)
+                                } else "no votes yet!"
                             }
                             td {
-                                a(href = "/vote/${feedback.id}/1") { +"1" }
-                                +" "
-                                a(href = "/vote/${feedback.id}/2") { +"2" }
-                                +" "
-                                a(href = "/vote/${feedback.id}/3") { +"3" }
-                                +" "
-                                a(href = "/vote/${feedback.id}/4") { +"4" }
-                                +" "
-                                a(href = "/vote/${feedback.id}/5") { +"5" }
+                                div(classes = "ui buttons") {
+                                    (1..5).forEach { index ->
+                                        a(href = "/vote/${feedback.id}/$index") {
+                                            button(classes = "ui button") { +index.toString() }
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
                 }
             }
-            h3 { +"Add feedback!" }
+            div(classes = "ui divider")
+            h3(classes = "ui header") { +"Add feedback!" }
             form(action = "/addFeedback", method = FormMethod.post) {
                 div { +"Feedback description" }
-                input(type = InputType.text, name = "feedbackDescription")
-                button(type = ButtonType.submit) { +"Send" }
+                div(classes = "ui action input") {
+                    input(type = InputType.text, name = "feedbackDescription")
+                    button(classes = "ui button", type = ButtonType.submit) { +"Send" }
+                }
             }
 
         }
     }
 }
+
+private fun Double.format(decimalDigits: Int): String = java.lang.String.format("%.${decimalDigits}f", this)
