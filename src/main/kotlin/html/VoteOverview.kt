@@ -1,12 +1,11 @@
 package html
 
-import getAllFeedbacks
-import getVoteCount
-import getVotesAverage
+import getVoteOverviewSiteData
 import kotlinx.html.*
 import kotlinx.html.stream.appendHTML
 
 fun generateVotesOverviewSite() = buildString {
+    val siteData = getVoteOverviewSiteData()
     appendHTML().html {
         head {
             title(content = "FeedbackPro")
@@ -33,14 +32,13 @@ fun generateVotesOverviewSite() = buildString {
                     }
                 }
                 tbody {
-                    getAllFeedbacks().forEach { feedback ->
+                    siteData.feedbacks.forEach { feedback ->
+                        val voteStats = siteData.getVoteStats(feedback)
                         tr {
                             td { +feedback.description }
-                            td { +getVoteCount(feedbackId = feedback._id).toString() }
+                            td { +voteStats.count.toString() }
                             td {
-                                +if (getVoteCount(feedbackId = feedback._id) > 0) {
-                                    getVotesAverage(feedbackId = feedback._id).format(decimalDigits = 2)
-                                } else "no votes yet!"
+                                +if (voteStats.count > 0) voteStats.average.format(decimalDigits = 2) else "no votes yet!"
                             }
                             td {
                                 div(classes = "ui buttons") {

@@ -6,7 +6,6 @@ import com.mongodb.client.MongoClient
 import com.mongodb.client.MongoClients
 import com.mongodb.client.MongoCollection
 import com.mongodb.client.MongoDatabase
-import com.mongodb.client.model.Filters
 import com.mongodb.client.model.Indexes
 import org.bson.Document
 import kotlin.random.Random
@@ -57,6 +56,13 @@ fun getAllFeedbacks(): List<Feedback> {
         .map { Database.mapper.convertValue(it, Feedback::class.java) }
 }
 
+fun getAllVotes(): List<Vote> {
+    return Database.votesCollection
+        .find()
+        .toList()
+        .map { Database.mapper.convertValue(it, Vote::class.java) }
+}
+
 fun addVote(feedbackId: String, voteValue: Int) {
     val vote = Vote(
         _id = "vote $feedbackId ${Random.nextInt()}",
@@ -66,15 +72,27 @@ fun addVote(feedbackId: String, voteValue: Int) {
     Database.votesCollection.insertOne(Database.mapper.convertValue(vote, Document::class.java))
 }
 
-fun getVoteCount(feedbackId: String): Int {
-    return Database.votesCollection.countDocuments(Filters.eq("feedbackId", feedbackId)).toInt()
+class VoteOverviewSiteData(
+    val feedbacks: List<Feedback>,
+    val feedBackVotes: Map<String, VoteStats>
+) {
+    class VoteStats(val count: Int, val average: Double)
+    fun getVoteStats(feedback: Feedback): VoteStats = feedBackVotes[feedback._id] ?: VoteStats(count = 0, average = 0.0)
 }
 
-fun getVotesAverage(feedbackId: String): Double {
-    return Database.votesCollection
-        .find(Filters.eq("feedbackId", feedbackId))
-        .toList()
-        .map { Database.mapper.convertValue(it, Vote::class.java) }
-        .map { it.value }
-        .average()
+fun getVoteOverviewSiteData(): VoteOverviewSiteData {
+    val allFeedbacks = getAllFeedbacks()
+    val allVotes = getAllVotes()
+
+    return VoteOverviewSiteData(
+        feedbacks = allFeedbacks,
+        feedBackVotes = allVotes
+            .groupBy { it.feedbackId }
+            .mapValues { (_, votes) ->
+                VoteOverviewSiteData.VoteStats(
+                    count = votes.count(),
+                    average = votes.map { it.value }.average()
+                )
+            }
+    )
 }
