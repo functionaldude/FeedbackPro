@@ -36,16 +36,16 @@ fun generateVotesOverviewSite() = buildString {
                     getAllFeedbacks().forEach { feedback ->
                         tr {
                             td { +feedback.description }
-                            td { +getVoteCount(feedbackId = feedback.id).toString() }
+                            td { +getVoteCount(feedbackId = feedback._id).toString() }
                             td {
-                                +if (getVoteCount(feedbackId = feedback.id) > 0) {
-                                    getVotesAverage(feedbackId = feedback.id).format(decimalDigits = 2)
+                                +if (getVoteCount(feedbackId = feedback._id) > 0) {
+                                    getVotesAverage(feedbackId = feedback._id).format(decimalDigits = 2)
                                 } else "no votes yet!"
                             }
                             td {
                                 div(classes = "ui buttons") {
                                     (1..5).forEach { index ->
-                                        a(href = "/vote/${feedback.id}/$index") {
+                                        a(href = "/vote/${feedback._id}/$index") {
                                             button(classes = "ui button") { +index.toString() }
                                         }
                                     }

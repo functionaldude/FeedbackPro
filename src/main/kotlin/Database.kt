@@ -1,30 +1,80 @@
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import com.mongodb.ConnectionString
+import com.mongodb.MongoClientSettings
+import com.mongodb.client.MongoClient
+import com.mongodb.client.MongoClients
+import com.mongodb.client.MongoCollection
+import com.mongodb.client.MongoDatabase
+import com.mongodb.client.model.Filters
+import com.mongodb.client.model.Indexes
+import org.bson.Document
 import kotlin.random.Random
 
-class Feedback(val id: String, val description: String, val votes: MutableList<Vote>)
-class Vote(val value: Int)
+object Database {
+    val mapper = ObjectMapper().registerKotlinModule()
+    val mongoClient: MongoClient
+    val database: MongoDatabase
 
-private val feedbacks = mutableListOf<Feedback>()
+    val feedbackCollection: MongoCollection<Document>
+    val votesCollection: MongoCollection<Document>
 
-fun addFeedback(description: String) {
-    feedbacks.add(
-        Feedback(
-            id = "feedback-${Random.nextInt()}",
-            description = description,
-            votes = mutableListOf()
-        )
-    )
+    init {
+        val connectionString = ConnectionString("mongodb://localhost:27017/feedbackPro")
+        val settings = MongoClientSettings.builder()
+            .applyConnectionString(connectionString)
+            .retryWrites(true)
+            .build()
+        mongoClient = MongoClients.create(settings)
+        database = mongoClient.getDatabase(connectionString.database!!)
+
+        val collections = database.listCollectionNames().toSet()
+
+        if ("feedbacks" !in collections) database.createCollection("feedbacks")
+        feedbackCollection = database.getCollection("feedbacks")
+
+        if ("votes" !in collections) database.createCollection("votes")
+        votesCollection = database.getCollection("votes")
+        votesCollection.createIndex(Indexes.ascending("feedbackId"))
+    }
 }
 
-fun getAllFeedbacks() = feedbacks
-fun getFeedback(feedbackId: String) = feedbacks.find { it.id == feedbackId }
+class Feedback(val _id: String, val description: String)
+class Vote(val _id: String, val feedbackId: String, val value: Int)
 
-fun addVote(feedbackId: String, voteValue: Int) = getFeedback(feedbackId)?.votes?.add(Vote(value = voteValue))
+fun addFeedback(description: String) {
+    val feedback = Feedback(
+        _id = "feedback ${Random.nextInt()}",
+        description = description
+    )
+    Database.feedbackCollection.insertOne(Database.mapper.convertValue(feedback, Document::class.java))
+}
+
+fun getAllFeedbacks(): List<Feedback> {
+    return Database.feedbackCollection
+        .find()
+        .toList()
+        .map { Database.mapper.convertValue(it, Feedback::class.java) }
+}
+
+fun addVote(feedbackId: String, voteValue: Int) {
+    val vote = Vote(
+        _id = "vote $feedbackId ${Random.nextInt()}",
+        feedbackId = feedbackId,
+        value = voteValue
+    )
+    Database.votesCollection.insertOne(Database.mapper.convertValue(vote, Document::class.java))
+}
 
 fun getVoteCount(feedbackId: String): Int {
-    return getFeedback(feedbackId)?.votes?.count() ?: throw IllegalArgumentException("Feedback not found")
+    return Database.votesCollection.countDocuments(Filters.eq("feedbackId", feedbackId)).toInt()
 }
 
 fun getVotesAverage(feedbackId: String): Double {
-    return getFeedback(feedbackId)?.votes?.map { it.value }?.average()
-        ?: throw IllegalArgumentException("Feedback not found")
+    return Database.votesCollection
+        .find(Filters.eq("feedbackId", feedbackId))
+        .toList()
+        .map { Database.mapper.convertValue(it, Vote::class.java) }
+        .map { it.value }
+        .average()
 }
