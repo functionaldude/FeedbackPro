@@ -1,10 +1,8 @@
 plugins {
-    id 'application' // Needed for
+    id 'application'
+    id "com.github.johnrengelman.shadow" version "5.2.0" // Needed for fat jar generation
     id 'org.jetbrains.kotlin.jvm' version '1.3.71'
 }
-
-group 'org.example'
-version '1.0-SNAPSHOT'
 
 repositories {
     mavenCentral()
@@ -16,6 +14,16 @@ def kotlinx_html_version = "0.6.10"
 
 application {
     mainClassName = 'AppKt'
+}
+
+// Configure the fat jar
+// More info: https://github.com/johnrengelman/shadow
+shadowJar {
+    manifest {
+        attributes 'Main-Class': mainClassName
+        baseName = 'Server'
+        classifier = ''
+    }
 }
 
 dependencies {
@@ -35,3 +43,31 @@ compileKotlin {
 compileTestKotlin {
     kotlinOptions.jvmTarget = "1.8"
 }
+
+
+//noinspection GroovyUnusedAssignment
+archivesBaseName = 'Server' // .jar name
+//noinspection GroovyUnusedAssignment
+libsDirName = './' // Output directory of build folder (which contains Server.jar)
+
+// Define jar
+//noinspection GroovyAssignabilityCheck
+jar {
+    // Don't add dependencies twice
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    manifest {
+        //noinspection GroovyAssignabilityCheck
+        attributes "Main-Class": mainClassName
+    }
+
+    // Add all dependencies
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+sourceSets {
+    main.java.srcDirs += 'src/main/kotlin'
+}
+
+task stage(dependsOn: ['shadowJar']) // Stage gets called when deploying on Scalingo

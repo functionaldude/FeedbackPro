@@ -62,6 +62,13 @@ fun generateVotesOverviewSite() = buildString {
                     button(classes = "ui button", type = ButtonType.submit) { +"Send" }
                 }
             }
+            div(classes = "ui divider")
+            h3(classes = "ui header") { +"More usefull sutff" }
+            div(classes = "ui list") {
+                div(classes = "item") { a(href = "https://github.com/functionaldude/FeedbackPro") { +"Check out the code on GitHub!" } }
+                div(classes = "item") { a(href = "https://functionaldude.com") { +"Check out my page!" } }
+            }
+
 
         }
     }

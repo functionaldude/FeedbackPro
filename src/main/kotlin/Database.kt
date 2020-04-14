@@ -19,7 +19,7 @@ object Database {
     val votesCollection: MongoCollection<Document>
 
     init {
-        val connectionString = ConnectionString("mongodb://localhost:27017/feedbackPro")
+        val connectionString = ConnectionString(System.getenv("MONGO_URL") ?: "mongodb://localhost:27017/feedbackPro")
         val settings = MongoClientSettings.builder()
             .applyConnectionString(connectionString)
             .retryWrites(true)

@@ -3,7 +3,7 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 
 fun main(args: Array<String>) {
-    embeddedServer(Netty, 8080) {
+    embeddedServer(Netty, port = System.getenv("PORT")?.toIntOrNull() ?: 8080) {
         routing {
             applicationRouting()
         }

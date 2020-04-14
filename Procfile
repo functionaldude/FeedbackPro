@@ -1,0 +1,1 @@
+web: java -XX:+ExitOnOutOfMemoryError -jar build/Server.jar
