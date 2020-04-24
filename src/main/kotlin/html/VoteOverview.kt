@@ -43,7 +43,7 @@ fun generateVotesOverviewSite() = buildString {
                             td {
                                 div(classes = "ui buttons") {
                                     (1..5).forEach { index ->
-                                        a(href = "/vote/${feedback._id}/$index") {
+                                        a(href = "/feedbackpro/vote/${feedback._id}/$index") {
                                             button(classes = "ui button") { +index.toString() }
                                         }
                                     }
@@ -55,7 +55,7 @@ fun generateVotesOverviewSite() = buildString {
             }
             div(classes = "ui divider")
             h3(classes = "ui header") { +"Add feedback!" }
-            form(action = "/addFeedback", method = FormMethod.post) {
+            form(action = "/feedbackpro/addFeedback", method = FormMethod.post) {
                 div { +"Feedback description" }
                 div(classes = "ui action input") {
                     input(type = InputType.text, name = "feedbackDescription")
@@ -65,11 +65,17 @@ fun generateVotesOverviewSite() = buildString {
             div(classes = "ui divider")
             h3(classes = "ui header") { +"More usefull sutff" }
             div(classes = "ui list") {
-                div(classes = "item") { a(href = "https://github.com/functionaldude/FeedbackPro") { +"Check out the code on GitHub!" } }
-                div(classes = "item") { a(href = "https://functionaldude.com") { +"Check out my page!" } }
+                div(classes = "item") {
+                    +"Check out the code on GitHub "
+                    a(href = "https://github.com/functionaldude/FeedbackPro") { +"here" }
+                    +"!"
+                }
+                div(classes = "item") {
+                    +"Check out my page "
+                    a(href = "https://functionaldude.com") { +"here" }
+                    +"!"
+                }
             }
-
-
         }
     }
 }

@@ -4,12 +4,12 @@ import io.ktor.http.ContentType
 import io.ktor.request.receiveParameters
 import io.ktor.response.respondRedirect
 import io.ktor.response.respondText
-import io.ktor.routing.Routing
+import io.ktor.routing.Route
 import io.ktor.routing.get
 import io.ktor.routing.post
 import io.ktor.routing.route
 
-fun Routing.applicationRouting() {
+fun Route.applicationRouting() {
     route("/") {
         get("") {
             call.respondText(generateVotesOverviewSite(), ContentType.Text.Html)
@@ -20,7 +20,7 @@ fun Routing.applicationRouting() {
                 voteValue = call.parameters["voteValue"]?.toInt()
                     ?: throw IllegalArgumentException("voteValue is missing")
             )
-            call.respondRedirect("/", permanent = false)
+            call.respondRedirect("/feedbackpro", permanent = false)
         }
         post("addFeedback") {
             val parameters = call.receiveParameters()
@@ -28,7 +28,7 @@ fun Routing.applicationRouting() {
                 description = parameters["feedbackDescription"]
                     ?: throw IllegalArgumentException("feedbackDescription is missing")
             )
-            call.respondRedirect("/", permanent = false)
+            call.respondRedirect("/feedbackpro", permanent = false)
         }
     }
 }
